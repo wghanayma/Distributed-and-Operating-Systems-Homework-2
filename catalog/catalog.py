@@ -49,14 +49,16 @@ def books_from_database():
 def insert_list_of_books_in_database():
     available_books_in_a_stock = [
         # (number of item, topic of the book, title of item , cost, stock)
-        (1, 'How to get a good grade in DOS in 20 minutes a day',
-         'distributed_systems', 1, 3),
-        (2, 'RPCs for Dummies', 'distributed_systems', 1, 3),
-        (3, 'Xen and the Art of Surviving Graduate School',
-         'graduate_school', 1, 3),
-        (4, 'Cooking for the Impatient Graduate Student', 'graduate_school', 1, 3)]
+        (1, 'How to get a good grade in DOS in 20 minutes a day','distributed_systems', 10, 9),
+        (2, 'RPCs for Dummies', 'distributed_systems', 10, 15),
+        (3, 'Xen and the Art of Surviving Graduate School','graduate_school', 10, 4),
+        (4, 'Cooking for the Impatient Graduate Student', 'graduate_school', 10, 20),
+        (5, 'How to finish Project 3 on time','spring_break', 10, 45),
+        (6, 'Why theory classes are so hard.','spring_break', 10, 7),
+        (7, 'Spring in the Pioneer Valley','spring_break', 10, 39)
+                                ]
     # if the database doesn't contain all the 4 books, then insert them into the database
-    if len(books_from_database()) < 4:
+    if len(books_from_database()) < 7:
         # Connect to a SQLite database by specifying the database file name
         connection = sqlite3.connect(DEFAULT_PATH)
         cursor = connection.cursor()
@@ -176,7 +178,7 @@ def query_by_subject(book_topic):
     return jsonify({'items': books})
 
 # Query by item (URLs)
-@app.route('/query_by_item/<int:number_of_items>', methods=['GET'])
+@app.route('/query_by_item/<int:book_number>', methods=['GET'])
 def query_by_item(book_number):
     book = query_by_book_number(book_number)
     print("Query by item : Book Number :{} ,Name :{} ,Stock : {} Cost: ${},".format(
