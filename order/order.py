@@ -7,7 +7,7 @@ import os
 import csv
 app = Flask("order Server")
 # IP address and port number of catalog server.
-catalog_ip = "172.16.233.135"
+catalog_ip = "192.168.1.205"
 catalog_port = 5000
 
 
@@ -32,7 +32,7 @@ def buy_request(item_number):
     if current_stock > 0:
         n = requests.get(
             'http://{}:{}/update/{}/decrease_stack/1'.format(catalog_ip, catalog_port, item_number))
-        with open('order_logs.csv', 'a', newline='') as file:
+        with open('order_logs.csv', 'a') as file:
             thewriter = csv.writer(file)
             thewriter.writerow([item_number,  'Order Completed',
                                 datetime.datetime.now(),
