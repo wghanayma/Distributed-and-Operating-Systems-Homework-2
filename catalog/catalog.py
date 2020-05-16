@@ -53,9 +53,9 @@ def insert_list_of_books_in_database():
         (2, 'RPCs for Dummies', 'distributed_systems', 10, 15),
         (3, 'Xen and the Art of Surviving Graduate School','graduate_school', 10, 4),
         (4, 'Cooking for the Impatient Graduate Student', 'graduate_school', 10, 20),
-        (5, 'How to finish Project 3 on time','spring_break', 10, 45),
-        (6, 'Why theory classes are so hard.','spring_break', 10, 7),
-        (7, 'Spring in the Pioneer Valley','spring_break', 10, 39)
+        (5, 'How to finish Project 3 on time','graduate_school', 10, 45),
+        (6, 'Why theory classes are so hard.','graduate_school', 10, 7),
+        (7, 'Spring in the Pioneer Valley','graduate_school', 10, 39)
                                 ]
     # if the database doesn't contain all the 4 books, then insert them into the database
     if len(books_from_database()) < 7:
