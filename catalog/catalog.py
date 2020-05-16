@@ -5,6 +5,12 @@ import json
 import socket
 import time
 import requests
+
+
+# IP address and port number of Catalog 2 server.
+catalogIp2 = "192.168.1.25"
+catalogPort2 = 5000
+
 # Create a database and create a table
 # Database storage location
 # /home/osboxes/Distributed-and-Operating-Systems-Homework-1/catalog/catalogdatabase.db
@@ -150,7 +156,8 @@ def update_book_cost(number_of_items, new_book_cost):
     connection.commit()
     # Close the connection
     cursor.close()
-
+    dataCostTosend = (number_of_items, new_book_cost)
+    send_data_from_catalog_to_catlog_2("update_book_cost",dataCostTosend)
 # Update the cost of a specific book in stock from Replica.
 def update_book_cost_replica(dataFromCatalog2):
     # Connect to a SQLite database by specifying the database file name
@@ -165,6 +172,20 @@ def update_book_cost_replica(dataFromCatalog2):
         connection.commit()
         # Close the connection
         cursor.close()
+        
+
+# send data to catalog 2 
+def send_data_from_catalog_to_catlog_2(operation,dataSend):
+    if operation == "update_book_stock":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp2, catalogPort2, operation,dataSend))
+    elif operation == "update_book_cost":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp2, catalogPort2, operation,dataSend))
+    else:
+        print("No operation specified !")
+
+
 app = Flask("Catalog Server")
 #Update (URLs)
 @app.route('/')
