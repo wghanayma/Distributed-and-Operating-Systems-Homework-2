@@ -5,6 +5,10 @@ import json
 import socket
 import time
 import requests
+import ast
+# IP address and port number of Catalog 1 server.
+catalogIp = "192.168.1.205"
+catalogPort = 5000
 # Create a database and create a table
 # Database storage location
 # /home/osboxes/Distributed-and-Operating-Systems-Homework-1/catalog/catalogdatabase.db
@@ -168,6 +172,27 @@ def update_book_cost_replica(dataFromCatalog):
         # Close the connection
         cursor.close()
 
+# send data to catalog 1 
+def send_data_from_catalog_to_catlog_1(operation,dataSend):
+    if operation == "update_book_stock":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+    elif operation == "update_book_cost":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+    else:
+        print("No operation specified !")
+
+@app.route('/update_replicas/<operation>/<data>', methods=['GET'])
+def receive_from_catlog_1_data(operation, data):
+    data = ast.literal_eval(data)
+    if operation == "update_book_count":
+        update_book_stock_replica(data)
+    elif operation == "update_cost_one_book":
+        update_book_cost_replica(data)
+     
+
+    return jsonify("confirmed: received Catalog 1 data")
 
 
 app = Flask("Catalog Server")
