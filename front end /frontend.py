@@ -1,25 +1,30 @@
 from flask import Flask, jsonify
-from flask_caching import Cache
-
 import requests
 import json
 import csv
 
 app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-
 
 #CACHE_TYPE is simple which means that Will use in memory pickle and is recommended only for single process development server .
 #http://brunorocha.org/python/flask/using-flask-cache.html
 
-# IP address and port number of Catalog server.
+# IP address and port number of Catalog 1 server.
 catalogIp = "192.168.1.205"
 catalogPort = 5000
-# IP address and port number of Order server.
+# IP address and port number of Catalog 2 server.
+catalogIp2 = "192.168.1.25"
+catalogPort2 = 5000
+# IP address and port number of Order 1 server.
 orderIp = "192.168.1.222"
 orderPort = 5000
+# IP address and port number of Order 2 server.
+orderIp2 = "192.168.1.149"
+orderPort2 = 5000
 
-
+currentOrderServer = 0	 
+flagsOrderServer = {}		 
+flagsOrderServer['order1'] = 1
+flagsOrderServer['order2'] = 1 
 @app.route('/')
 def main():
     return "FrontEnd Server"
@@ -29,10 +34,10 @@ def main():
 # 2- graduate_school
 
 @app.route('/search/<topic>', methods=['GET'])
-@cache.memoize()
-#The theory behind memoization is that if you have a function you need to call several times in one request .
+ #The theory behind memoization is that if you have a function you need to call several times in one request .
 #https://pythonhosted.org/Flask-Cache
 def searchRequest(topic):
+    
     print("Received client search request for books on topic- {}".format(topic))
     print("Sending subject-based query to the catalog server.")
     r = requests.get(
@@ -44,7 +49,6 @@ def searchRequest(topic):
      
 
 @app.route('/lookup/<int:item_number>', methods=['GET'])
-@cache.memoize()
 def lookupRequest(item_number):
     print("Received client lookup request book number {}.".format(item_number))
     print("Sending item query to the catalog server.")
@@ -58,14 +62,30 @@ def lookupRequest(item_number):
 
 
 @app.route('/buy/<int:item_number>', methods=['GET'])
-@cache.memoize()
 #The theory behind memoization is that if you have a function you need to call several times in one request .
 #https://pythonhosted.org/Flask-Cache
 def buy(item_number):
+    #Round robin
+    #https://www.youtube.com/watch?v=-jFGYDfWkXI
+    #https://www.gatevidyalay.com/round-robin-round-robin-scheduling-examples
+    global currentOrderServer, flagsOrderServer
+    chooseOrder=''
+    if currentOrderServer == 0 and flagsOrderServer['order1'] == 1:
+        chooseOrder='1'
+        currentOrderServer = 1
+        url = 'http://{}:{}/buy/{}'.format(orderIp, orderPort, item_number) 
+    elif flagsOrderServer['order2']==1 :
+        chooseOrder ='2'
+        currentOrderServer = 0
+        url = 'http://{}:{}/buy/{}'.format(orderIp2, orderPort2, item_number) 
+    else :
+        chooseOrder ='1'
+        currentOrderServer = 1
+        url = 'http://{}:{}/buy/{}'.format(orderIp, orderPort, item_number) 
+ 
     print("Client wants to buy book number {}".format(item_number))
-    print("Sending buy request to the order server.")
-    n = requests.get(
-        'http://{}:{}/buy/{}'.format(orderIp, orderPort, item_number))
+    print("Sending buy request to the order {} server.".format(chooseOrder))
+    n = requests.get(url)
     response = json.loads(n.text)
     return jsonify(response)
  
