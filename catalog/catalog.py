@@ -5,6 +5,7 @@ import json
 import socket
 import time
 import requests
+import ast
 
 
 # IP address and port number of Catalog 2 server.
@@ -185,6 +186,16 @@ def send_data_from_catalog_to_catlog_2(operation,dataSend):
     else:
         print("No operation specified !")
 
+@app.route('/update_replicas/<operation>/<data>', methods=['GET'])
+def receive_from_catlog_2_data(operation, data):
+    data = ast.literal_eval(data)
+    if operation == "update_book_count":
+        update_book_stock_replica(data)
+    elif operation == "update_cost_one_book":
+        update_book_cost_replica(data)
+     
+
+    return jsonify("confirmed: received Catalog 2 data")
 
 app = Flask("Catalog Server")
 #Update (URLs)
