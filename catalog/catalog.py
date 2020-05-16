@@ -7,6 +7,13 @@ import time
 import requests
 import ast
 
+app = Flask("Catalog Server")
+#Update (URLs)
+@app.route('/')
+def main():
+    return "Catalog Server"
+
+
 
 # IP address and port number of Catalog 2 server.
 catalogIp2 = "192.168.1.25"
@@ -189,19 +196,16 @@ def send_data_from_catalog_to_catlog_2(operation,dataSend):
 @app.route('/update_replicas/<operation>/<data>', methods=['GET'])
 def receive_from_catlog_2_data(operation, data):
     data = ast.literal_eval(data)
-    if operation == "update_book_count":
+    if operation == "update_book_stock":
         update_book_stock_replica(data)
-    elif operation == "update_cost_one_book":
+    elif operation == "update_book_cost":
         update_book_cost_replica(data)
-     
+    else:
+        print("No operation specified !")
+
 
     return jsonify("confirmed: received Catalog 2 data")
 
-app = Flask("Catalog Server")
-#Update (URLs)
-@app.route('/')
-def main():
-    return "Catalog Server"
 
 
 @app.route('/update/<int:book_number>/<operation>/<int:change>', methods=['GET'])

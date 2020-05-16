@@ -6,6 +6,13 @@ import socket
 import time
 import requests
 import ast
+
+app = Flask("Catalog Server")
+#Update (URLs)
+@app.route('/')
+def main():
+    return "Catalog Server"
+
 # IP address and port number of Catalog 1 server.
 catalogIp = "192.168.1.205"
 catalogPort = 5000
@@ -195,11 +202,6 @@ def receive_from_catlog_1_data(operation, data):
     return jsonify("confirmed: received Catalog 1 data")
 
 
-app = Flask("Catalog Server")
-#Update (URLs)
-@app.route('/')
-def main():
-    return "Catalog Server"
 
 
 @app.route('/update/<int:book_number>/<operation>/<int:change>', methods=['GET'])
