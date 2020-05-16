@@ -124,9 +124,24 @@ def update_book_stock(number_of_items, new_stock_count):
     # Close the connection
     cursor.close()
 
+#  Update the number of copies available for the book in stock from Replica 
+def update_book_stock_replica(dataFromCatalog):
+    # Connect to a SQLite database by specifying the database file name
+    connection = sqlite3.connect(DEFAULT_PATH)
+    for row in enumerate(dataFromCatalog):
+        number_of_items = row[0]
+        new_stock_count = row[1]
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE books SET stock = ? WHERE number_of_items = ? ''',
+                   (new_stock_count, number_of_items))
+        # Commit the changes to database
+        connection.commit()
+        # Close the connection
+        cursor.close()
+
+
+
 # Update the cost of a specific book in stock.
-
-
 def update_book_cost(number_of_items, new_book_cost):
     # Connect to a SQLite database by specifying the database file name
     connection = sqlite3.connect(DEFAULT_PATH)
@@ -137,6 +152,22 @@ def update_book_cost(number_of_items, new_book_cost):
     connection.commit()
     # Close the connection
     cursor.close()
+
+# Update the cost of a specific book in stock from Replica.
+def update_book_cost_replica(dataFromCatalog):
+    # Connect to a SQLite database by specifying the database file name
+    connection = sqlite3.connect(DEFAULT_PATH)
+    for row in enumerate(dataFromCatalog):
+        number_of_items = row[0]
+        new_book_cost = row[1]
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE books SET cost = ? WHERE number_of_items = ? ''',
+                   (new_book_cost, number_of_items))
+        # Commit the changes to database
+        connection.commit()
+        # Close the connection
+        cursor.close()
+
 
 
 app = Flask("Catalog Server")
