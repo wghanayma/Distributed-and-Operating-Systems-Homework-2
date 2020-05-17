@@ -1,10 +1,10 @@
 from flask import Flask, jsonify
+import time
 import requests
 import json
 import csv
 
 app = Flask(__name__)
-
 #CACHE_TYPE is simple which means that Will use in memory pickle and is recommended only for single process development server .
 #http://brunorocha.org/python/flask/using-flask-cache.html
 
@@ -20,6 +20,8 @@ orderPort = 5000
 # IP address and port number of Order 2 server.
 orderIp2 = "192.168.1.149"
 orderPort2 = 5000
+
+cached_data = dict()
 
 currentOrderServer = 0	 
 flagsOrderServer = {}		 
@@ -65,38 +67,58 @@ def searchRequest(topic):
     r = json.loads(r.text)
     print("Forwarding query results to the client.")
     return jsonify(r)
-     
+
 
 @app.route('/lookup/<int:item_number>', methods=['GET'])
-
+#@cache.memoize(timeout = 30)
 def lookupRequest(item_number):
-    #Round robin
-    global currentCatalogServer, flagsCatalogServer
-    chooseCatalog=''
-    if currentCatalogServer == 0 and flagsCatalogServer['catalog1'] == 1:
-        chooseCatalog='1'
-        currentCatalogServer = 1
-        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
-    elif flagsCatalogServer['catalog2']==1 :
-        chooseCatalog ='2'
-        currentCatalogServer = 0
-        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp2, catalogPort2, item_number) 
-    else :
-        chooseCatalog ='1'
-        currentCatalogServer = 1
-        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
+    try:
+        print('Data found in cache.')
+        print(cached_data)
+        m = cached_data[item_number]
+        return jsonify(m)
+    except:
+        #Round robin
+        global currentCatalogServer, flagsCatalogServer
+        chooseCatalog=''
+        if currentCatalogServer == 0 and flagsCatalogServer['catalog1'] == 1:
+            chooseCatalog='1'
+            currentCatalogServer = 1
+            url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
+        elif flagsCatalogServer['catalog2']==1 :
+            chooseCatalog ='2'
+            currentCatalogServer = 0
+            url = 'http://{}:{}/query_by_item/{}'.format(catalogIp2, catalogPort2, item_number) 
+        else :
+            chooseCatalog ='1'
+            currentCatalogServer = 1
+            url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
+        print("Received client lookup request book number {}.".format(item_number))
+        print("Sending item query to the catalog server {}.".format(chooseCatalog))
+        start = time.time()
+        m = requests.get(url)
+        print("Lookup : Name : {} ,Stock : {} ,Cost :{}$".format(
+        m.json()['title'], m.json()['stock'], m.json()['cost']))
+        data_to_cache = { 'cost':m.json()['cost'],'number_of_items':m.json()['number_of_items'], 'stock':m.json()['stock'],'title':m.json()['title']}
+        cached_data[item_number] = data_to_cache
+        m = json.loads(m.text)
+        end = time.time()
+        time_taken = (end - start)
+        #string_time_taken = "{:.2f}".format(time_taken)
+        print "%.2gs" % (time_taken)
+        #print("Lookup took {} seconds".format(string_time_taken))
+        print("Forwarding query results to the client.")
+        return jsonify(m)
 
-    print("Received client lookup request book number {}.".format(item_number))
-    print("Sending item query to the catalog server {}.".format(chooseCatalog))
-    m = requests.get(url)
-    print("Lookup : Name : {} ,Stock : {} ,Cost :{}$".format(
-    m.json()['title'], m.json()['stock'], m.json()['cost']))
-    m = json.loads(m.text)
-    print("Forwarding query results to the client.")
-    return jsonify(m)
+@app.route("/invalidate/<string:itemNumber>")
+def invalidate(item_number):
+    print("Invalidating cache data for item number- {}".format(item_number))
+    cached_data.pop(item_number, None)
+    return jsonify("Cache data invalidated.")
 
 
 @app.route('/buy/<int:item_number>', methods=['GET'])
+#@cache.memoize(timeout = 30)
 #The theory behind memoization is that if you have a function you need to call several times in one request .
 #https://pythonhosted.org/Flask-Cache
 def buy(item_number):
@@ -118,8 +140,14 @@ def buy(item_number):
  
     print("Client wants to buy book number {}".format(item_number))
     print("Sending buy request to the order {} server.".format(chooseOrder))
-    n = requests.get(url)
+    start = time.time()
+    n = requests.get(url,timeout = 5)
     response = json.loads(n.text)
+    end = time.time()
+    time_taken = (end - start)
+    print "%.2gs" % (time_taken)
+	#print("Buy took {} seconds\n".format(time_taken),' seconds)
+
     return jsonify(response)
  
 

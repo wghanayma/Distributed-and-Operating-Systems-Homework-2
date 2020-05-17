@@ -5,3 +5,4 @@ catalog/catalogDatabase.db
 order/order_2.pyc
 order/order_logs.csv
 order/order.pyc
+front end /frontend.pyc
