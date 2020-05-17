@@ -127,6 +127,7 @@ def query_by_book_number(number_of_items):
 # Update the number of copies available for the book in stock.
 
 def update_book_stock(number_of_items, new_stock_count):
+    send_data_from_catalog_to_catlog_2("update_book_stock",number_of_items,new_stock_count)
     # Connect to a SQLite database by specifying the database file name
     connection = sqlite3.connect(DEFAULT_PATH)
     cursor = connection.cursor()
@@ -136,7 +137,6 @@ def update_book_stock(number_of_items, new_stock_count):
     connection.commit()
     # Close the connection
     cursor.close()
-    send_data_from_catalog_to_catlog_2("update_book_stock",number_of_items,new_stock_count)
 
 #  Update the number of copies available for the book in stock from Replica 
 def update_book_stock_replica(item,dataFromCatalog2):
@@ -179,7 +179,7 @@ def update_book_cost_replica(item,dataFromCatalog2):
 
 # send data to catalog 2 
 def send_data_from_catalog_to_catlog_2(operation,item,dataSend):
-    if operation == "update_book_stock":
+     if operation == "update_book_stock":
         response = requests.get(
                 'http://{}:{}/update_replicas/{}/{}/{}'.format(catalogIp2, catalogPort2, operation,item,dataSend))
     elif operation == "update_book_cost":
@@ -231,7 +231,13 @@ def update(book_number, operation, change):
 @app.route('/query_by_subject/<book_topic>', methods=['GET'])
 def query_by_subject(book_topic):
     books = query_by_topic(book_topic)
-    return jsonify({'items': books})
+    if len(books) == 0:
+        return jsonify("There is no relevant book available associated with topic- {}".format(book_topic))
+    
+    books_dict = {}
+    for book_row in books:
+        books_dict[book_row[3]] = book_row[1]
+    return jsonify({'items': books_dict})
 
 # Query by item (URLs)
 @app.route('/query_by_item/<int:book_number>', methods=['GET'])
