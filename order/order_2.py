@@ -6,13 +6,8 @@ import socket
 import os
 import csv
 app = Flask("order Server")
-<<<<<<< HEAD
-# IP address and port number of catalog2 server.
-catalog_ip = "192.168.1.25"
-=======
-# IP address and port number of catalog server.
-catalog_ip = "192.168.1.205"
->>>>>>> b227947101652c6b2136ee8977dde6c1bf017bb1
+# IP address and port number of catalog 2 server.
+catalog_ip = "192.168.1.182"
 catalog_port = 5000
 
 def create_data_file():
