@@ -19,6 +19,9 @@ def main():
 catalogIp2 = "192.168.1.182"
 catalogPort2 = 5000
 
+# IP address and port number of FrontEnd server.
+frontEndIp2 = "192.168.1.208"
+frontEndPort2 = 5000
 # Create a database and create a table
 # Database storage location
 # /home/osboxes/Distributed-and-Operating-Systems-Homework-1/catalog/catalogdatabase.db
@@ -179,7 +182,7 @@ def update_book_cost_replica(item,dataFromCatalog2):
 
 # send data to catalog 2 
 def send_data_from_catalog_to_catlog_2(operation,item,dataSend):
-     if operation == "update_book_stock":
+    if operation == "update_book_stock":
         response = requests.get(
                 'http://{}:{}/update_replicas/{}/{}/{}'.format(catalogIp2, catalogPort2, operation,item,dataSend))
     elif operation == "update_book_cost":
