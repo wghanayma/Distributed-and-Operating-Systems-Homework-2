@@ -1,6 +1,11 @@
 <<<<<<< HEAD
+catalog/catalog_2.pyc
+catalog/catalog_2Database_2.db
+=======
+<<<<<<< HEAD
 order/order_2.pyc
 order/order_logs.csv
 =======
 order/order.pyc
 >>>>>>> b227947101652c6b2136ee8977dde6c1bf017bb1
+>>>>>>> 1f3d61a7a33d2ae6db5cb87d548de49004d237c4
