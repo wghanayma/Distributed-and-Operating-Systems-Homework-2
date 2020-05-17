@@ -25,6 +25,10 @@ currentOrderServer = 0
 flagsOrderServer = {}		 
 flagsOrderServer['order1'] = 1
 flagsOrderServer['order2'] = 1 
+currentCatalogServer = 0	 
+flagsCatalogServer = {}	
+flagsCatalogServer['catalog1'] = 1
+flagsCatalogServer['catalog2'] = 1 
 @app.route('/')
 def main():
     return "FrontEnd Server"
@@ -34,14 +38,29 @@ def main():
 # 2- graduate_school
 
 @app.route('/search/<topic>', methods=['GET'])
+
  #The theory behind memoization is that if you have a function you need to call several times in one request .
 #https://pythonhosted.org/Flask-Cache
 def searchRequest(topic):
-    
+        #Round robin
+    global currentCatalogServer, flagsCatalogServer
+    chooseCatalog=''
+    if currentCatalogServer == 0 and flagsCatalogServer['catalog1'] == 1:
+        chooseCatalog='1'
+        currentCatalogServer = 1
+        url = 'http://{}:{}/query_by_subject/{}'.format(catalogIp, catalogPort, topic) 
+    elif flagsCatalogServer['catalog2']==1 :
+        chooseCatalog ='2'
+        currentCatalogServer = 0
+        url = 'http://{}:{}/query_by_subject/{}'.format(catalogIp2, catalogPort2, topic) 
+    else :
+        chooseCatalog ='1'
+        currentCatalogServer = 1
+        url = 'http://{}:{}/query_by_subject/{}'.format(catalogIp, catalogPort, topic) 
+        
     print("Received client search request for books on topic- {}".format(topic))
-    print("Sending subject-based query to the catalog server.")
-    r = requests.get(
-        'http://{}:{}/query_by_subject/{}'.format(catalogIp, catalogPort, topic))
+    print("Sending subject-based query to the catalog server{}.".format(chooseCatalog))
+    r = requests.get(url)
  
     r = json.loads(r.text)
     print("Forwarding query results to the client.")
@@ -49,11 +68,27 @@ def searchRequest(topic):
      
 
 @app.route('/lookup/<int:item_number>', methods=['GET'])
+
 def lookupRequest(item_number):
+    #Round robin
+    global currentCatalogServer, flagsCatalogServer
+    chooseCatalog=''
+    if currentCatalogServer == 0 and flagsCatalogServer['catalog1'] == 1:
+        chooseCatalog='1'
+        currentCatalogServer = 1
+        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
+    elif flagsCatalogServer['catalog2']==1 :
+        chooseCatalog ='2'
+        currentCatalogServer = 0
+        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp2, catalogPort2, item_number) 
+    else :
+        chooseCatalog ='1'
+        currentCatalogServer = 1
+        url = 'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number) 
+
     print("Received client lookup request book number {}.".format(item_number))
-    print("Sending item query to the catalog server.")
-    m = requests.get(
-        'http://{}:{}/query_by_item/{}'.format(catalogIp, catalogPort, item_number))
+    print("Sending item query to the catalog server {}.".format(chooseCatalog))
+    m = requests.get(url)
     print("Lookup : Name : {} ,Stock : {} ,Cost :{}$".format(
     m.json()['title'], m.json()['stock'], m.json()['cost']))
     m = json.loads(m.text)
@@ -66,8 +101,6 @@ def lookupRequest(item_number):
 #https://pythonhosted.org/Flask-Cache
 def buy(item_number):
     #Round robin
-    #https://www.youtube.com/watch?v=-jFGYDfWkXI
-    #https://www.gatevidyalay.com/round-robin-round-robin-scheduling-examples
     global currentOrderServer, flagsOrderServer
     chooseOrder=''
     if currentOrderServer == 0 and flagsOrderServer['order1'] == 1:
