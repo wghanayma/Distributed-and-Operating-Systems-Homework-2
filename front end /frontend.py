@@ -12,7 +12,7 @@ app = Flask(__name__)
 catalogIp = "192.168.1.205"
 catalogPort = 5000
 # IP address and port number of Catalog 2 server.
-catalogIp2 = "192.168.1.25"
+catalogIp2 = "192.168.1.182"
 catalogPort2 = 5000
 # IP address and port number of Order 1 server.
 orderIp = "192.168.1.222"
