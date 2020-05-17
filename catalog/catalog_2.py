@@ -5,6 +5,17 @@ import json
 import socket
 import time
 import requests
+import ast
+
+app = Flask("Catalog Server")
+#Update (URLs)
+@app.route('/')
+def main():
+    return "Catalog Server"
+
+# IP address and port number of Catalog 1 server.
+catalogIp = "192.168.1.205"
+catalogPort = 5000
 # Create a database and create a table
 # Database storage location
 # /home/osboxes/Distributed-and-Operating-Systems-Homework-1/catalog/catalogdatabase.db
@@ -124,9 +135,24 @@ def update_book_stock(number_of_items, new_stock_count):
     # Close the connection
     cursor.close()
 
+#  Update the number of copies available for the book in stock from Replica 
+def update_book_stock_replica(dataFromCatalog):
+    # Connect to a SQLite database by specifying the database file name
+    connection = sqlite3.connect(DEFAULT_PATH)
+    for row in enumerate(dataFromCatalog):
+        number_of_items = row[0]
+        new_stock_count = row[1]
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE books SET stock = ? WHERE number_of_items = ? ''',
+                   (new_stock_count, number_of_items))
+        # Commit the changes to database
+        connection.commit()
+        # Close the connection
+        cursor.close()
+
+
+
 # Update the cost of a specific book in stock.
-
-
 def update_book_cost(number_of_items, new_book_cost):
     # Connect to a SQLite database by specifying the database file name
     connection = sqlite3.connect(DEFAULT_PATH)
@@ -138,12 +164,44 @@ def update_book_cost(number_of_items, new_book_cost):
     # Close the connection
     cursor.close()
 
+# Update the cost of a specific book in stock from Replica.
+def update_book_cost_replica(dataFromCatalog):
+    # Connect to a SQLite database by specifying the database file name
+    connection = sqlite3.connect(DEFAULT_PATH)
+    for row in enumerate(dataFromCatalog):
+        number_of_items = row[0]
+        new_book_cost = row[1]
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE books SET cost = ? WHERE number_of_items = ? ''',
+                   (new_book_cost, number_of_items))
+        # Commit the changes to database
+        connection.commit()
+        # Close the connection
+        cursor.close()
 
-app = Flask("Catalog Server")
-#Update (URLs)
-@app.route('/')
-def main():
-    return "Catalog Server"
+# send data to catalog 1 
+def send_data_from_catalog_to_catlog_1(operation,dataSend):
+    if operation == "update_book_stock":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+    elif operation == "update_book_cost":
+        response = requests.get(
+                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+    else:
+        print("No operation specified !")
+
+@app.route('/update_replicas/<operation>/<data>', methods=['GET'])
+def receive_from_catlog_1_data(operation, data):
+    data = ast.literal_eval(data)
+    if operation == "update_book_count":
+        update_book_stock_replica(data)
+    elif operation == "update_cost_one_book":
+        update_book_cost_replica(data)
+     
+
+    return jsonify("confirmed: received Catalog 1 data")
+
+
 
 
 @app.route('/update/<int:book_number>/<operation>/<int:change>', methods=['GET'])
