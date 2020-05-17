@@ -16,6 +16,9 @@ def main():
 # IP address and port number of Catalog 1 server.
 catalogIp = "192.168.1.205"
 catalogPort = 5000
+# IP address and port number of FrontEnd server.
+frontEndIp2 = "192.168.1.208"
+frontEndPort2 = 5000
 
 # Create a database and create a table
 # Database storage location
