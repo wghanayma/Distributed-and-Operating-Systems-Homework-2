@@ -6,10 +6,9 @@ import socket
 import os
 import csv
 app = Flask("order Server")
-# IP address and port number of catalog server.
-catalog_ip = "192.168.1.149"
+# IP address and port number of catalog 2 server.
+catalog_ip = "192.168.1.182"
 catalog_port = 5000
-
 
 def create_data_file():
     file_exists = os.path.isfile(os.getcwd() + '/order_logs.csv')
