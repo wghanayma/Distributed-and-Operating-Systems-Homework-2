@@ -199,9 +199,9 @@ def send_data_from_catalog_to_catlog_1(operation,dataSend):
 @app.route('/update_replicas/<operation>/<data>', methods=['GET'])
 def receive_from_catlog_1_data(operation, data):
     data = ast.literal_eval(data)
-    if operation == "update_book_count":
+    if operation == "update_book_stock":
         update_book_stock_replica(data)
-    elif operation == "update_cost_one_book":
+    elif operation == "update_book_cost":
         update_book_cost_replica(data)
      
 
