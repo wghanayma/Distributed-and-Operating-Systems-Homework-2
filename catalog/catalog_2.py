@@ -136,7 +136,7 @@ def update_book_stock(number_of_items, new_stock_count):
     # Close the connection
     cursor.close()
     dataStockTosend = (number_of_items, new_stock_count)
-    send_data_from_catalog_to_catlog_2("update_book_stock",dataStockTosend)
+    send_data_from_catalog_to_catlog_1("update_book_stock",dataStockTosend)
 
 #  Update the number of copies available for the book in stock from Replica 
 def update_book_stock_replica(dataFromCatalog):
@@ -167,7 +167,7 @@ def update_book_cost(number_of_items, new_book_cost):
     # Close the connection
     cursor.close()
     dataCostTosend = (number_of_items, new_book_cost)
-    send_data_from_catalog_to_catlog_2("update_book_cost",dataCostTosend)
+    send_data_from_catalog_to_catlog_1("update_book_cost",dataCostTosend)
 
 # Update the cost of a specific book in stock from Replica.
 def update_book_cost_replica(dataFromCatalog):
