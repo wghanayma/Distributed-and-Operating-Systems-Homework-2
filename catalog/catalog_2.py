@@ -135,23 +135,19 @@ def update_book_stock(number_of_items, new_stock_count):
     connection.commit()
     # Close the connection
     cursor.close()
-    dataStockTosend = (number_of_items, new_stock_count)
-    send_data_from_catalog_to_catlog_1("update_book_stock",dataStockTosend)
+    send_data_from_catalog_to_catlog_1("update_book_stock",number_of_items,new_stock_count)
 
 #  Update the number of copies available for the book in stock from Replica 
-def update_book_stock_replica(dataFromCatalog):
+def update_book_stock_replica(item,dataFromCatalog):
     # Connect to a SQLite database by specifying the database file name
     connection = sqlite3.connect(DEFAULT_PATH)
-    for row in enumerate(dataFromCatalog):
-        number_of_items = row[0]
-        new_stock_count = row[1]
-        cursor = connection.cursor()
-        cursor.execute('''UPDATE books SET stock = ? WHERE number_of_items = ? ''',
-                   (new_stock_count, number_of_items))
+    cursor = connection.cursor()
+    cursor.execute('''UPDATE books SET stock = ? WHERE number_of_items = ? ''',
+                   (dataFromCatalog, item))
         # Commit the changes to database
-        connection.commit()
+    connection.commit()
         # Close the connection
-        cursor.close()
+    cursor.close()
 
 
 
@@ -166,43 +162,38 @@ def update_book_cost(number_of_items, new_book_cost):
     connection.commit()
     # Close the connection
     cursor.close()
-    dataCostTosend = (number_of_items, new_book_cost)
-    send_data_from_catalog_to_catlog_1("update_book_cost",dataCostTosend)
+    send_data_from_catalog_to_catlog_1("update_book_cost",number_of_items,new_book_cost)
 
 # Update the cost of a specific book in stock from Replica.
-def update_book_cost_replica(dataFromCatalog):
+def update_book_cost_replica(item,dataFromCatalog):
     # Connect to a SQLite database by specifying the database file name
     connection = sqlite3.connect(DEFAULT_PATH)
-    for row in enumerate(dataFromCatalog):
-        number_of_items = row[0]
-        new_book_cost = row[1]
-        cursor = connection.cursor()
-        cursor.execute('''UPDATE books SET cost = ? WHERE number_of_items = ? ''',
-                   (new_book_cost, number_of_items))
+    cursor = connection.cursor()
+    cursor.execute('''UPDATE books SET cost = ? WHERE number_of_items = ? ''',
+                   (dataFromCatalog, item))
         # Commit the changes to database
-        connection.commit()
+    connection.commit()
         # Close the connection
-        cursor.close()
+    cursor.close()
 
 
 # send data to catalog 1 
-def send_data_from_catalog_to_catlog_1(operation,dataSend):
+def send_data_from_catalog_to_catlog_1(operation,item,dataSend):
     if operation == "update_book_stock":
         response = requests.get(
-                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+                'http://{}:{}/update_replicas/{}/{}/{}'.format(catalogIp, catalogPort, operation,item,dataSend))
     elif operation == "update_book_cost":
         response = requests.get(
-                'http://{}:{}/update_replicas/{}/{}'.format(catalogIp, catalogPort, operation,dataSend))
+                'http://{}:{}/update_replicas/{}/{}/{}'.format(catalogIp, catalogPort, operation,item,dataSend))
     else:
         print("No operation specified !")
 
-@app.route('/update_replicas/<operation>/<data>', methods=['GET'])
-def receive_from_catlog_1_data(operation, data):
-    data = ast.literal_eval(data)
+@app.route('/update_replicas/<operation>/<int:item>/<int:data>', methods=['GET'])
+def receive_from_catlog_1_data(operation, item,data):
     if operation == "update_book_stock":
-        update_book_stock_replica(data)
+        update_book_stock_replica(item,data)
     elif operation == "update_book_cost":
-        update_book_cost_replica(data)
+        update_book_cost_replica(item,data)
      
 
     return jsonify("confirmed: received Catalog 1 data")
@@ -239,7 +230,13 @@ def update(book_number, operation, change):
 @app.route('/query_by_subject/<book_topic>', methods=['GET'])
 def query_by_subject(book_topic):
     books = query_by_topic(book_topic)
-    return jsonify({'items': books})
+    if len(books) == 0:
+        return jsonify("There is no relevant book available associated with topic- {}".format(book_topic))
+    
+    books_dict = {}
+    for book_row in books:
+        books_dict[book_row[3]] = book_row[1]
+    return jsonify({'items': books_dict})
 
 # Query by item (URLs)
 @app.route('/query_by_item/<int:book_number>', methods=['GET'])
