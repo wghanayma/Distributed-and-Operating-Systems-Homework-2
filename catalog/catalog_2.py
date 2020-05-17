@@ -16,6 +16,7 @@ def main():
 # IP address and port number of Catalog 1 server.
 catalogIp = "192.168.1.205"
 catalogPort = 5000
+
 # Create a database and create a table
 # Database storage location
 # /home/osboxes/Distributed-and-Operating-Systems-Homework-1/catalog/catalogdatabase.db
@@ -134,6 +135,8 @@ def update_book_stock(number_of_items, new_stock_count):
     connection.commit()
     # Close the connection
     cursor.close()
+    dataStockTosend = (number_of_items, new_stock_count)
+    send_data_from_catalog_to_catlog_2("update_book_stock",dataStockTosend)
 
 #  Update the number of copies available for the book in stock from Replica 
 def update_book_stock_replica(dataFromCatalog):
@@ -163,6 +166,8 @@ def update_book_cost(number_of_items, new_book_cost):
     connection.commit()
     # Close the connection
     cursor.close()
+    dataCostTosend = (number_of_items, new_book_cost)
+    send_data_from_catalog_to_catlog_2("update_book_cost",dataCostTosend)
 
 # Update the cost of a specific book in stock from Replica.
 def update_book_cost_replica(dataFromCatalog):
@@ -178,6 +183,7 @@ def update_book_cost_replica(dataFromCatalog):
         connection.commit()
         # Close the connection
         cursor.close()
+
 
 # send data to catalog 1 
 def send_data_from_catalog_to_catlog_1(operation,dataSend):
