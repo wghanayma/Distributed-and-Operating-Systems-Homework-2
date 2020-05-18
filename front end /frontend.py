@@ -179,6 +179,48 @@ def testUncached(numbersTest,sizeCached):
     print("Average time per uncached search after doing {} sequential buys is :{} seconds\n".format(numbersTest,time_taken_uncached))
     return jsonify({'numbersTest': numbersTest,'average_time_taken_uncached': time_taken_uncached,'average_time_taken_cached': time_taken_cached})
 
+@app.route('/test_lookup/<int:numbersTest>/sizeCached/<int:sizeCached>')
+def testLookup(numbersTest,sizeCached):
+    global SizeCache
+    SizeCache=sizeCached
+    time_taken = 0.0
+    for i in range(numbersTest):
+		start_time = time.time()
+		r = requests.get(url + 'lookup/{}'.format(random.randint(1,7)))
+		end_time = time.time()
+		time_taken += end_time - start_time
+    time_taken /= numbersTest
+    cached_data.clear()
+    print("Average time loopup after doing {} sequential buys is :{} seconds\n" .format(numbersTest,time_taken))
+    return jsonify({'numbersTest': numbersTest,'average_time_taken': time_taken})
+@app.route('/test_search/<int:numbersTest>/sizeCached/<int:sizeCached>')
+def testSearch(numbersTest,sizeCached):
+    global SizeCache
+    SizeCache=sizeCached
+    time_taken = 0.0
+    for i in range(numbersTest):
+		start_time = time.time()
+		r = requests.get(url + 'search/{}'.format (random.choice(['distributed_systems', 'graduate_school'])))
+		end_time = time.time()
+		time_taken += end_time - start_time
+    time_taken /= numbersTest
+    cached_data.clear()
+    print("Average time search after doing {} sequential buys is :{} seconds\n" .format(numbersTest,time_taken))
+    return jsonify({'numbersTest': numbersTest,'average_time_taken': time_taken})
+@app.route('/test_buy/<int:numbersTest>/sizeCached/<int:sizeCached>')
+def testBuy(numbersTest,sizeCached):
+    global SizeCache
+    SizeCache=sizeCached
+    time_taken = 0.0
+    for i in range(numbersTest):
+		start_time = time.time()
+		r = requests.get(url + 'buy/{}'.format (random.randint(1,7)))
+		end_time = time.time()
+		time_taken += end_time - start_time
+    time_taken /= numbersTest
+    cached_data.clear()
+    print("Average time search after doing {} sequential buys is :{} seconds\n" .format(numbersTest,time_taken))
+    return jsonify({'numbersTest': numbersTest,'average_time_taken': time_taken})
 @app.route('/buy/<int:item_number>', methods=['GET'])
 #@cache.memoize(timeout = 30)
 #The theory behind memoization is that if you have a function you need to call several times in one request .
