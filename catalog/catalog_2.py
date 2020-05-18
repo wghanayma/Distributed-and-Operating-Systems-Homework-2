@@ -64,13 +64,13 @@ def books_from_database():
 def insert_list_of_books_in_database():
     available_books_in_a_stock = [
         # (number of item, topic of the book, title of item , cost, stock)
-        (1, 'How to get a good grade in DOS in 20 minutes a day','distributed_systems', 10, 9),
-        (2, 'RPCs for Dummies', 'distributed_systems', 10, 15),
-        (3, 'Xen and the Art of Surviving Graduate School','graduate_school', 10, 4),
-        (4, 'Cooking for the Impatient Graduate Student', 'graduate_school', 10, 20),
-        (5, 'How to finish Project 3 on time','spring_break', 10, 45),
-        (6, 'Why theory classes are so hard.','spring_break', 10, 7),
-        (7, 'Spring in the Pioneer Valley','spring_break', 10, 39)
+        (1, 'How to get a good grade in DOS in 20 minutes a day','distributed_systems', 10, 1000),
+        (2, 'RPCs for Dummies', 'distributed_systems', 10, 1000),
+        (3, 'Xen and the Art of Surviving Graduate School','graduate_school', 10, 1000),
+        (4, 'Cooking for the Impatient Graduate Student', 'graduate_school', 10, 1000),
+        (5, 'How to finish Project 3 on time','graduate_school', 10, 1000),
+        (6, 'Why theory classes are so hard.','graduate_school', 10, 1000),
+        (7, 'Spring in the Pioneer Valley','graduate_school', 10, 1000)
                                 ]
     # if the database doesn't contain all the 4 books, then insert them into the database
     if len(books_from_database()) < 7:
@@ -209,36 +209,26 @@ def update(book_number, operation, change):
     book = query_by_book_number(book_number)
     if operation == 'decrease_stack':
         if query_by_book_number(book_number)[5] >= 1:
-            m = requests.get('http://{}:{}/cache/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
-            if m.json() == 'Cache data invalidated.':
-                new_stock = book[5] - change
-                print("Received update request from order server for book {} and the new stock is {}.".format(
-                book_number, new_stock))
-                update_book_stock(book_number, new_stock)
-                return jsonify({'new_stock': new_stock})
-            else:
-                return jsonify("Cannot invalidate cache data.")
+            m = requests.get('http://{}:{}/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
+            new_stock = book[5] - change
+            print("Received update request from order server for book {} and the new stock is {}.".format(
+            book_number, new_stock))
+            update_book_stock(book_number, new_stock)
+            return jsonify({'new_stock': new_stock})
     if operation == 'increase_stack':
-        m = requests.get('http://{}:{}/cache/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
-        if m.json() == 'Cache data invalidated.':
+            m = requests.get('http://{}:{}/cache/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
             new_stock = book[5] + change
             update_book_stock(book_number, new_stock)
             print("Received update request from order server for book {} and new stock is {} .".format(
             book_number, new_stock))
             return jsonify({'new_stock': new_stock})
-        else:
-            return jsonify("Cannot invalidate cache data.")
-
     if operation == 'update_cost':
-        m = requests.get('http://{}:{}/cache/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
-        if m.json() == 'Cache data invalidated.':
+            m = requests.get('http://{}:{}/cache/invalidate/{}'.format(frontEndIp, frontEndPort, book_number))
             new_book_cost = change
             update_book_cost(book_number, new_book_cost)
             print("Received update request from order server for book {} and a new cost is {} .".format(
             book_number, new_book_cost))
             return jsonify({'new_cost': new_book_cost})
-        else :
-            return jsonify("Cannot invalidate cache data.") 
 # Query by subject (URLs)
 # 1- distributed_systems
 # 2- graduate_school
