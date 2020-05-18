@@ -10,10 +10,10 @@ app = Flask(__name__)
 #http://brunorocha.org/python/flask/using-flask-cache.html
 SizeCache=0
 # IP address and port number of Catalog 1 server.
-catalogIp = "192.168.1.205"
+catalogIp = "192.168.1.210"
 catalogPort = 5000
 # IP address and port number of Catalog 2 server.
-catalogIp2 = "192.168.1.182"
+catalogIp2 = "192.168.1.123"
 catalogPort2 = 5000
 # IP address and port number of Order 1 server.
 orderIp = "192.168.1.222"
@@ -109,10 +109,10 @@ def lookupRequest(item_number):
         print("Lookup : Name : {} ,Stock : {} ,Cost :{}$".format(
         m.json()['title'], m.json()['stock'], m.json()['cost']))
         data_to_cache = { 'cost':m.json()['cost'],'number_of_items':m.json()['number_of_items'], 'stock':m.json()['stock'],'title':m.json()['title']}
-        if len(cached_data)>=SizeCache and len(cached_data)!=0:
+        if len(cached_data)>SizeCache and len(cached_data)!=0:
             print("Remove Last Item from Cache.")
             cached_data.popitem()
-        elif len(cached_data)<=SizeCache:
+        elif len(cached_data)<=SizeCache and SizeCache :
             cached_data[item_number] = data_to_cache
         else:
             print("No Cache.")
@@ -150,8 +150,10 @@ def test(numbersTest,sizeCached):
 		time_taken_uncached += end_time1 - start_time
     time_taken_uncached /= numbersTest
     time_taken_cached /= numbersTest
+    cached_data.clear()
     print("Average time per cached search after doing {} sequential buys is :{} seconds\n" .format(numbersTest,time_taken_cached))
     print("Average time per uncached search after doing {} sequential buys is :{} seconds\n".format(numbersTest,time_taken_uncached))
+    
     return jsonify({'numbersTest': numbersTest,'average_time_taken_uncached': time_taken_uncached,'average_time_taken_cached': time_taken_cached})
 
 @app.route('/test_uncached/<int:numbersTest>/sizeCached/<int:sizeCached>')
@@ -172,6 +174,7 @@ def testUncached(numbersTest,sizeCached):
 		time_taken_uncached += end_time1 - start_time
     time_taken_uncached /= numbersTest
     time_taken_cached /= numbersTest
+    cached_data.clear()
     print("Average time per cached search after doing {} sequential buys is :{} seconds\n" .format(numbersTest,time_taken_cached))
     print("Average time per uncached search after doing {} sequential buys is :{} seconds\n".format(numbersTest,time_taken_uncached))
     return jsonify({'numbersTest': numbersTest,'average_time_taken_uncached': time_taken_uncached,'average_time_taken_cached': time_taken_cached})

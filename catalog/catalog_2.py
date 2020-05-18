@@ -14,7 +14,7 @@ def main():
     return "Catalog Server"
 
 # IP address and port number of Catalog 1 server.
-catalogIp = "192.168.1.205"
+catalogIp = "192.168.1.210"
 catalogPort = 5000
 # IP address and port number of FrontEnd server.
 frontEndIp = "192.168.1.208"

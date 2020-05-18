@@ -16,7 +16,7 @@ def main():
 
 
 # IP address and port number of Catalog 2 server.
-catalogIp2 = "192.168.1.182"
+catalogIp2 = "192.168.1.123"
 catalogPort2 = 5000
 
 # IP address and port number of FrontEnd server.
